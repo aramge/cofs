@@ -11,3 +11,8 @@
 - The "active" keys are "defined" by the colored Solfege Ring (by turning
   the Solfege Ring). The other keys should be grayed out on mouse release.
 - The cofs should also be a handcraft work: Printed out on paper
+- The relationship between the "Modes Ring" and the "Steps Ring" should be
+  achieched in such a manner, that if one clicks on a Mode, e.g. Lydian 
+  corresponding Tonica of the Steps rings should be in coherence with the
+  Modes Ring. Attention: There is just one VII's, which has to be part of
+  the game. 
