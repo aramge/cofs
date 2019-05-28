@@ -10,13 +10,24 @@ startRadius = 3.0
 padding = 0.1
 
 -- Ring of Keys; Spiral of 19 Keys in Wedges ------------------------------
-keyText = [
-  -- "...", "Bbb", "Fb",
-  "Cb", "Gb", "Db", "Ab", "Eb", "Bb",
-  "F",  "C",  "G",  "D",  "A",  "E",  "B",
-  "F#", "C#", "G#", "D#", "A#", "E#"
-  -- ,"B+", "..."
-  ]
+keyText = map (\n ->
+     [['A'..] !! ((4*n-1) `mod` 7)] ++
+     (alterateKey $ floor $ fromIntegral (n+2) / 7)
+              ) [-8..10]
+-- Old
+-- keyText = [
+--   -- "...", "B𝄫", "F♭",
+--   "C♭", "G♭", "D♭", "A♭", "E♭", "B♭",
+--   "F",  "C",  "G",  "D",  "A",  "E",  "B",
+--   "F♯", "C♯", "G♯", "D♯", "A♯", "E♯"
+--   -- ,"B𝄪", "..."
+--   ]
+alterateKey :: Int -> String
+alterateKey n
+  | n < (-1)  = '𝄫' : alterateKey (n+2)
+  | n < 0     = take (-n) $ repeat '♭'
+  | n > 1     = '𝄪' : alterateKey (n-2)
+  | otherwise = take n $ repeat '♯'
 key :: String -> Diagram B
 key s = text s <> square 1 # lw none
 keysRing :: Diagram B
@@ -63,6 +74,6 @@ stepWedges :: Diagram B
 stepWedges = mconcat . take 12 . iterate (rotateBy (1/12)) $ aStepWedge
 -- -------------------------------------------------------------------------
 cofs :: Diagram B
-cofs = circle 0.1 <> keysRing <> keyWedges <> solfegeRing <> modesRing <> solfegeWedges <> stepsRing <> stepWedges
+cofs = circle 0.1 <> keysRing <> keyWedges <> solfegeRing <> modesRing <> solfegeWedges <> stepsRing <> stepWedges <> circle 10 # lw 0
 main = mainWith cofs
 
