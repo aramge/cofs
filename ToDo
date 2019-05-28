@@ -1,0 +1,6 @@
+- The modes shall be "curved" (in fact every Text should be curved)
+- The kerning in front of the '♭' and the '♯' is too big. It's interesting, that this is not not the case for '𝄫' and the '𝄪'.
+- The radii of the rings are computed by hand, this should be calculated from the radius of the inner ring, when an outer ring is "stacked"
+- The rings should be moveable around their center. The motion shall be limited to the maximum values, that make sense, i.e. if the SolfeRing is turned clockwise, the stop is at the "E♯". The Steps Ring should be limited so that the VII is always inside the colored area of the Solfege Ring
+- The "active" keys are "defined" by the colored Solfege Ring (by turning the Solfege Ring). The other keys should be grayed out on mouse release.
+- The cofs should also be a handcraft work: Printed out on paper
