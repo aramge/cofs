@@ -4,16 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f1225c915656ae0b0d41aad9879c68a547e22a5d5460f1cdd9a64764236f638
+-- hash: b55915926295dbe37f9c506e4994f36dc3ddc256f9d6c05307beb2f186a4956b
 
 name:           cofs
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/cofs#readme>
 homepage:       https://github.com/githubuser/cofs#readme
 bug-reports:    https://github.com/githubuser/cofs/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
+author:         Axel Ramge
+maintainer:     axel@ramge.de
+copyright:      2020 Axel Ramge
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -34,6 +34,10 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , colour >=2.3.5
+    , diagrams >=1.4
+    , diagrams-lib
+    , diagrams-svg
   default-language: Haskell2010
 
 executable cofs-exe
@@ -46,6 +50,10 @@ executable cofs-exe
   build-depends:
       base >=4.7 && <5
     , cofs
+    , colour >=2.3.5
+    , diagrams >=1.4
+    , diagrams-lib
+    , diagrams-svg
   default-language: Haskell2010
 
 test-suite cofs-test
@@ -59,4 +67,8 @@ test-suite cofs-test
   build-depends:
       base >=4.7 && <5
     , cofs
+    , colour >=2.3.5
+    , diagrams >=1.4
+    , diagrams-lib
+    , diagrams-svg
   default-language: Haskell2010

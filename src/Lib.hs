@@ -28,7 +28,7 @@ padding = 0.1
 keyText (solfegeDo, _) =
   map
     (\n -> (['A' ..] !! ((4 * n - 1) `mod` 7)) : (alterateKey ((n + 2) `div` 7))) $
-  [-8 .. 10]
+  take 19 [solfegeDo - 8 ..]
 
 -- Old
 -- keyText = [
@@ -40,21 +40,27 @@ keyText (solfegeDo, _) =
 --   ]
 alterateKey :: Int -> String
 alterateKey n
-  | n < (-1) = '𝄫' : alterateKey (n + 2)
+  | n < (-1) = bb ++ alterateKey (n + 2)
   | n < 0 = replicate (-n) '♭'
-  | n > 1 = '𝄪' : alterateKey (n - 2)
+  | n > 1 = ss ++ alterateKey (n - 2)
   | otherwise = replicate n '♯'
+  where
+    bb = "bb" --'𝄫'
+    ss = "##" -- '𝄪'
 
 key :: String -> Diagram B
 key = text -- <> square 1 # lw none
 
 keysRing :: State -> [Diagram B]
 keysRing (solfegeDo, mode) =
+  rotateBy (fromIntegral (-solfegeDo) / 12) .
   zipWith rotateBy [-1 / 12,-2 / 12 ..] .
-  zipWith translateY [startRadius,(startRadius + spiralDelta) ..] . map key $
+  zipWith translateY [startRadius,(startRadius + spiralDelta) ..] .
+  zipWith fc cs . map key $
   keyText (solfegeDo, mode)
   where
     spiralDelta = (0.8 + padding) / 12.0
+    cs = replicate 6 gray ++ replicate 7 black ++ replicate 6 gray
 
 aKeyWedge :: Diagram B
 aKeyWedge = annularWedge 5 2.6 xDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
@@ -67,9 +73,7 @@ rotateList = drop <> take
 
 keys :: State -> Diagram B
 keys (solfegeDo, mode) =
-  rotateBy (8 / 12) . mconcat . zipWith fc cs $ keysRing (solfegeDo, mode)
-  where
-    cs = rotateList (6 - solfegeDo) $ replicate 12 gray ++ replicate 7 black
+  rotateBy (8 / 12) . mconcat $ keysRing (solfegeDo, mode)
 
 -- -------------------------------------------------------------------------
 -- Ring Solfege; 7 Solfege Syllables in colored wedges (3 major, 3 minor, 1 diminished)
@@ -172,7 +176,7 @@ cofs state =
 
 renderCofs :: State -> IO ()
 renderCofs (step, mode) = do
-  renderSVG "test.svg" (mkWidth 600) $ cofs (step, mode)
+  renderSVG "test.svg" (mkWidth 800) $ cofs (step, mode)
   putStrLn "(+) Step up. (-) Step down. (m) Cycle mode. (q)uit"
   c <- getChar
   case c of

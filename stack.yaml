@@ -40,6 +40,13 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
+# extra-deps:
+# - diagrams-canvas-1.4.1@sha256:bb4707ade5d7c79f93c34c959cce57ced9fa582ff7e1f28698afe915c57b318d,1840
+# - glib-0.13.8.1@sha256:42670daf0c85309281e08ba8559df75daa2e3be642e79fdfa781bef5e59658b0,3156
+# - gtk2hs-buildtools-0.13.8.0@sha256:132f38155fc677430a47ea750918973161c876fb6f281d342ac2f07eb99229ce,5238
+# - cairo-0.13.8.1@sha256:1938aaeb5d3504678d995774dfe870f6b66cbd43d336b692fa8779b23b2b67a9,4075
+# - pango-0.13.8.1@sha256:877b121c0bf87c96d3619effae6751ecfd74b7f7f3227cf3fde012597aed5ed9,3917
+# - diagrams-cairo-1.4.1.1@sha256:24dd541b2c98f5a5785a68ea136bf154a4ffca571e0638660dd1ced45e4a84cb,3811
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
