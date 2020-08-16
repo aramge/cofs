@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
+--(...) :: a -> (f -> a -
 module Lib
   ( someFunc
   ) where
@@ -25,19 +26,12 @@ startRadius = 3.0
 padding = 0.1
 
 -- Ring of Keys; Spiral of 19 Keys in Wedges ------------------------------
+keyText :: State -> [String]
 keyText (solfegeDo, _) =
   map
     (\n -> (['A' ..] !! ((4 * n - 1) `mod` 7)) : (alterateKey ((n + 2) `div` 7))) $
   take 19 [solfegeDo - 8 ..]
 
--- Old
--- keyText = [
---   -- "...", "B𝄫", "F♭",
---   "C♭", "G♭", "D♭", "A♭", "E♭", "B♭",
---   "F",  "C",  "G",  "D",  "A",  "E",  "B",
---   "F♯", "C♯", "G♯", "D♯", "A♯", "E♯"
---   -- ,"B𝄪", "..."
---   ]
 alterateKey :: Int -> String
 alterateKey n
   | n < (-1) = bb ++ alterateKey (n + 2)
@@ -45,8 +39,8 @@ alterateKey n
   | n > 1 = ss ++ alterateKey (n - 2)
   | otherwise = replicate n '♯'
   where
-    bb = "bb" --'𝄫'
-    ss = "##" -- '𝄪'
+    bb = "♭♭" --'𝄫'
+    ss = "♯♯" -- '𝄪'
 
 key :: String -> Diagram B
 key = text -- <> square 1 # lw none
@@ -63,7 +57,7 @@ keysRing (solfegeDo, mode) =
     cs = replicate 6 gray ++ replicate 7 black ++ replicate 6 gray
 
 aKeyWedge :: Diagram B
-aKeyWedge = annularWedge 5 2.6 xDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
+aKeyWedge = annularWedge 5.2 2.6 xDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
 
 keyWedges :: Diagram B
 keyWedges = mconcat . take 12 . iterate (rotateBy (1 / 12)) $ aKeyWedge
@@ -110,7 +104,7 @@ modesRing (solfegeDo, mode) =
     cs = rotateList (6 - ((2 * mode - 1) `mod` 7)) $ replicate 6 gray ++ [black]
 
 aSolfegeWedge :: Diagram B
-aSolfegeWedge = annularWedge 7 5.1 yDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
+aSolfegeWedge = annularWedge 7.2 5.3 yDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
 
 solfegeWedges :: State -> Diagram B
 solfegeWedges (solfegeDo, mode) =
@@ -127,11 +121,12 @@ stepsRing (solfegeDo, mode) =
   rotateBy ((2 - fromIntegral solfegeDo) / 12) .
   mconcat .
   zipWith rotateBy [-1 / 12,-2 / 12 ..] .
-  map (translateY 7.3 # fontSize (local 1.0)) $
+  map (translateY 7.5 # fontSize (local 1.0)) $
   map key stepsText
   where
     stepsText =
-      zipWithFunc
+      zipWith
+        ($)
         [ id
         , id
         , id
@@ -148,14 +143,8 @@ stepsRing (solfegeDo, mode) =
           | x < 1 || x > 7 = error "showRoman only defined for 1..7!"
           | otherwise = ["I", "II", "III", "IV", "V", "VI", "VII"] !! (x - 1)
 
---      iterate (+ 4) (((mode * 3 + 6) `mod` 7) + 1)
-zipWithFunc :: [a -> b] -> [a] -> [b]
-zipWithFunc [] _ = []
-zipWithFunc _ [] = []
-zipWithFunc (f:fs) (x:xs) = f x : zipWithFunc fs xs
-
 aStepWedge :: Diagram B
-aStepWedge = annularWedge 8.3 7.1 yDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
+aStepWedge = annularWedge 8.5 7.3 yDir (1 / 12 @@ turn) # rotateBy (-1 / 24)
 
 stepWedges :: State -> Diagram B
 stepWedges (solfegeDo, _) =
@@ -177,7 +166,6 @@ cofs state =
 renderCofs :: State -> IO ()
 renderCofs (step, mode) = do
   renderSVG "test.svg" (mkWidth 800) $ cofs (step, mode)
-  putStrLn "(+) Step up. (-) Step down. (m) Cycle mode. (q)uit"
   c <- getChar
   case c of
     '+' -> renderCofs (step + 1, mode)
@@ -189,5 +177,6 @@ someFunc :: IO ()
 someFunc -- mainWith cofs
  = do
   hSetBuffering stdin NoBuffering
+  putStrLn "(+) Step up. (-) Step down. (m) Cycle mode. (q)uit"
   renderCofs (0, 1)
 -- Make an SVG-Image by "stack exec -- cofs-exe -w 600 -h 600 -o test.svg"
