@@ -30,7 +30,7 @@ padding = 0.1
 keyText :: State -> [String]
 keyText (solfegeDo, _) =
   map
-    (\n -> (['A' ..] !! ((4 * n - 1) `mod` 7)) : (alterateKey ((n + 2) `div` 7))) $
+    (\n -> (['A' ..] !! ((4 * n - 1) `mod` 7)) : alterateKey ((n + 2) `div` 7)) $
   take 19 [solfegeDo - 8 ..]
 
 alterateKey :: Int -> String
@@ -77,8 +77,9 @@ solfegeRing :: State -> Diagram B
 solfegeRing (solfegeDo, mode) =
   rotateBy ((2 - fromIntegral solfegeDo) / 12) .
   mconcat .
-  zipWith rotateBy [-1 / 12,-2 / 12 ..] . map (translateY 5.5) . zipWith fc cs $
-  map key solfegeText
+  zipWith fc cs .
+  zipWith rotateBy [-1 / 12,-2 / 12 ..] . map (translateY 5.5 . key) $
+  solfegeText
   where
     solfegeText :: [String]
     solfegeText = ["Fa", "Do", "So", "re", "la", "mi", "TI"]
@@ -88,9 +89,10 @@ modesRing :: State -> Diagram B
 modesRing (solfegeDo, mode) =
   rotateBy ((2 - fromIntegral solfegeDo) / 12) .
   mconcat .
+  zipWith fc cs .
   zipWith rotateBy [-1 / 12,-2 / 12 ..] .
-  map (translateY 6.4 # fontSize (local 0.6)) . zipWith fc cs $
-  map key modesText
+  map ((translateY 6.4 # fontSize (local 0.6)) . key) $
+  modesText
   where
     modesText :: [String]
     modesText =
@@ -122,8 +124,8 @@ stepsRing (solfegeDo, mode) =
   rotateBy ((2 - fromIntegral solfegeDo) / 12) .
   mconcat .
   zipWith rotateBy [-1 / 12,-2 / 12 ..] .
-  map (translateY 7.5 # fontSize (local 1.0)) $
-  map key stepsText
+  map ((translateY 7.5 # fontSize (local 1.0)) . key) $
+  stepsText
   where
     stepsText =
       zipWith
@@ -136,7 +138,7 @@ stepsRing (solfegeDo, mode) =
         , map toLower
         , flip (++) " dim" . map toLower
         ] .
-      map showRoman . take 7 . map ((+ 1) . (`mod` 7)) $
+      take 7 . map (showRoman . (+ 1) . (`mod` 7)) $
       iterate (+ 4) ((4 - mode) `mod` 7)
       where
         showRoman :: Int -> String
