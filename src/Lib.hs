@@ -4,10 +4,11 @@
 
 --(...) :: a -> (f -> a -
 module Lib
-  ( someFunc
+  ( initialize
   ) where
 
 import Data.Colour (withOpacity)
+import System.Exit
 import System.IO
 
 import Diagrams.Backend.SVG
@@ -163,20 +164,21 @@ cofs state =
   solfegeWedges state <>
   stepsRing state <> stepWedges state <> circle 10 # lw 0 # bg white
 
-renderCofs :: State -> IO ()
-renderCofs (step, mode) = do
+loop :: State -> IO ()
+loop (step, mode) = do
   renderSVG "test.svg" (mkWidth 800) $ cofs (step, mode)
   c <- getChar
   case c of
-    '+' -> renderCofs (step + 1, mode)
-    '-' -> renderCofs (step - 1, mode)
-    'm' -> renderCofs (step, (mode `mod` 7) + 1)
-    'q' -> undefined
+    '+' -> loop (step + 1, mode)
+    '-' -> loop (step - 1, mode)
+    'm' -> loop (step, (mode `mod` 7) + 1)
+    'q' -> do
+      putStrLn "Bye. CU\n"
+      exitSuccess
 
-someFunc :: IO ()
-someFunc -- mainWith cofs
- = do
+initialize :: IO ()
+initialize = do
   hSetBuffering stdin NoBuffering
   putStrLn "(+) Step up. (-) Step down. (m) Cycle mode. (q)uit"
-  renderCofs (0, 1)
+  loop (0, 1)
 -- Make an SVG-Image by "stack exec -- cofs-exe -w 600 -h 600 -o test.svg"
