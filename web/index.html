@@ -5,35 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Circle of Fifths</title>
 <style>
+  :root {
+    --ink: #1f1d1a;
+    --muted: #7d776e;
+    --line: #cfc7ba;
+    --paper: #fffdf8;
+    --background: #f3efe7;
+  }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
-    padding: 16px;
-    background: #fff;
-    color: #000;
+    padding: 32px 16px 24px;
+    background: var(--background);
+    color: var(--ink);
     font-family: "Latin Modern Roman", "CMU Serif", serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+  }
+  header { text-align: center; }
+  h1 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 2.2rem;
+    letter-spacing: 0.02em;
+  }
+  .subtitle {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
   }
   #cofs { touch-action: none; user-select: none; -webkit-user-select: none; }
-  #cofs svg { width: min(800px, 100%); height: auto; display: block; }
-  .hint { font-size: 0.85em; color: #555; margin: 0; }
+  #cofs svg { width: min(760px, 100%); height: auto; display: block; }
   nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-  button { font: inherit; padding: 4px 12px; }
-  #state { font-size: 0.9em; color: #555; }
+  button {
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  button:hover { border-color: var(--muted); }
+  button:active { background: var(--background); }
+  kbd {
+    font-family: inherit;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .hint { margin: 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
 </style>
 </head>
 <body>
+<header>
+  <h1>Circle of Fifths</h1>
+  <p class="subtitle">Keys · Solfège · Modes · Steps</p>
+</header>
+<div id="cofs"></div>
 <nav>
-  <button data-key="+">(+) Step up</button>
-  <button data-key="-">(−) Step down</button>
-  <button data-key="m">(m) Cycle mode</button>
+  <button data-key="-"><kbd>−</kbd>Step down</button>
+  <button data-key="+"><kbd>+</kbd>Step up</button>
+  <button data-key="m"><kbd>m</kbd>Cycle mode</button>
   <button id="save">Save SVG</button>
 </nav>
-<div id="state"></div>
-<div id="cofs"></div>
-<p class="hint">Drag the solfege and steps rings, or click a mode.</p>
+<p class="hint">Drag the solfège and steps rings, or click a mode.</p>
 <script src="cofs.js"></script>
 </body>
 </html>

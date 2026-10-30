@@ -65,14 +65,17 @@ const scale = size / 20; // the diagram is bounded by `circle 10`
 // Turn of the whole circle (in turns, counter-clockwise): 1/2 puts C at
 // the bottom.
 const baseTurn = 1 / 2;
-const lineWidth = 3.2; // diagrams' default line width at this size
+const lineWidth = 1.2;
 
-const black = "rgb(0,0,0)";
-const gray = "rgb(128,128,128)";
-const white = "rgb(255,255,255)";
-const honeydew = "rgb(240,255,240)";
-const bisque = "rgb(255,228,196)";
-const pink = "rgb(255,192,203)";
+// Palette: ink on paper, muted tints for major, minor and diminished.
+const ink = "#1f1d1a"; // active keys, tonic, steps
+const muted = "#7d776e"; // the other syllables and modes
+const faded = "#c4bdb2"; // inactive keys
+const line = "#4a4640";
+const paper = "#fffdf8";
+const major = "#e1ead6";
+const minor = "#f1e2c6";
+const diminished = "#ecd0cc";
 
 // Haskell's `mod` and `div` round towards negative infinity.
 const mod = (a: number, b: number): number => ((a % b) + b) % b;
@@ -132,7 +135,7 @@ const annularWedge = (outer: number, inner: number, t0: number, t1: number, fill
   const d =
     `M ${fmt(ox0)},${fmt(oy0)} A ${R},${R} 0 0 0 ${fmt(ox1)},${fmt(oy1)}` +
     ` L ${fmt(ix1)},${fmt(iy1)} A ${r},${r} 0 0 1 ${fmt(ix0)},${fmt(iy0)} Z`;
-  return fill ? `<path d="${d}" fill="${fill}"/>` : `<path d="${d}" fill="none"/>`;
+  return `<path d="${d}" fill="${fill ?? paper}"/>`;
 };
 
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
@@ -156,7 +159,7 @@ const keysRing = ({ solfegeDo, dragging }: State): string[] => {
   const fa = Math.round(solfegeDo) + 6;
   return keyText.map((s, n) => {
     const active = dragging || (n >= fa && n < fa + 7);
-    return key(s, keysLayout.rows[0] + n * spiralDelta, 8 / 12 - (n + 1) / 12, active ? black : gray, keyFont);
+    return key(s, keysLayout.rows[0] + n * spiralDelta, 8 / 12 - (n + 1) / 12, active ? ink : faded, keyFont);
   });
 };
 
@@ -171,9 +174,9 @@ const keyWedges = (): string[] =>
 const solfegeText = ["Fa", "Do", "So", "re", "la", "mi", "TI"];
 const modesText = ["Lydian", "Ionian", "Mixolydian", "Dorian", "Aeolian", "Phrygian", "Locrian"];
 
-// The syllable and mode of the tonic are black, the others gray.
+// The syllable and mode of the tonic are in ink, the others muted.
 const ringColors = (tonic: number): string[] =>
-  range(7).map((k) => (k === Math.round(tonic) + 1 ? black : gray));
+  range(7).map((k) => (k === Math.round(tonic) + 1 ? ink : muted));
 
 // Rotation of the solfege ring at position k (0 = Fa .. 6 = TI); k may be
 // fractional for the steps ring turning on it.
@@ -195,7 +198,7 @@ const modesRing = ({ solfegeDo, tonic }: State): string[] => {
 };
 
 const solfegeWedges = ({ solfegeDo }: State): string[] => {
-  const solfegeColors = [honeydew, honeydew, honeydew, bisque, bisque, bisque, pink];
+  const solfegeColors = [major, major, major, minor, minor, minor, diminished];
   return solfegeColors.map((c, k) => {
     const t = 1 / 4 - 1 / 24 + ringTurn(solfegeDo, k);
     return annularWedge(solfegeLayout.outer, solfegeLayout.inner, t, t + 1 / 12, c);
@@ -230,7 +233,7 @@ const stepsRing = ({ solfegeDo, tonic }: State): string[] =>
       const opacity = 1 - 2 * outside; // fade out beyond the colored wedges
       if (opacity <= 0) return [];
       const s = chordCase[clamp([0, 6], Math.round(k))](showRoman(mod(4 * o, 7) + 1));
-      return [key(s, stepsLayout.rows[0], ringTurn(solfegeDo, k), black, stepFont, opacity)];
+      return [key(s, stepsLayout.rows[0], ringTurn(solfegeDo, k), ink, stepFont, opacity)];
     });
 
 const stepWedges = ({ solfegeDo }: State): string[] =>
@@ -240,30 +243,53 @@ const stepWedges = ({ solfegeDo }: State): string[] =>
   });
 
 // -------------------------------------------------------------------------
+// The tonic and mode, upright in the hub.
+const hub = (state: State): string[] => {
+  const [tonic, mode] = describe(state);
+  const [, base, accidentals] = tonic.match(/^(.*?)([♭♯]*)$/)!;
+  const name = accidentals ? `${base}<tspan dx="-0.08em">${accidentals}</tspan>` : base;
+  const c = size / 2;
+  return [
+    `<circle cx="${c}" cy="${c}" r="${fmt(hubRadius * scale)}" fill="${paper}" stroke="${line}"` +
+      ` stroke-width="${lineWidth}"/>`,
+    `<text x="${c}" y="${fmt(c + 0.15 * scale)}" fill="${ink}" font-size="${fmt(1.4 * scale)}px">${name}</text>`,
+    `<text x="${c}" y="${fmt(c + 0.95 * scale)}" fill="${muted}" font-size="${fmt(0.5 * scale)}px"` +
+      ` letter-spacing="0.08em">${mode.toUpperCase()}</text>`,
+  ];
+};
+
+// A layer of the circle, turned by `baseTurn`. The shadow is applied
+// outside the turn so that it always falls downwards.
+const layer = (items: string[], shadow = false): string[] => [
+  shadow ? `<g filter="url(#shadow)">` : `<g>`,
+  `<g transform="rotate(${fmt(-360 * baseTurn)} ${size / 2} ${size / 2})">`,
+  ...items,
+  `</g></g>`,
+];
+
 // Layers from bottom to top, i.e. the reverse of the `<>` chain in Lib.hs.
 const cofs = (state: State): string => {
   pathCount = 0;
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"` +
-      ` viewBox="0 0 ${size} ${size}" stroke="${black}" stroke-width="${lineWidth}"` +
+      ` viewBox="0 0 ${size} ${size}" stroke="${line}" stroke-width="${lineWidth}"` +
       ` font-family="'Latin Modern Roman', 'Latin Modern Math', 'CMU Serif', serif"` +
       ` text-anchor="middle">`,
-    `<rect width="${size}" height="${size}" fill="${white}" stroke="none"/>`,
-    `<g transform="rotate(${fmt(-360 * baseTurn)} ${size / 2} ${size / 2})">`,
-    ...stepWedges(state),
+    `<defs><filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">` +
+      `<feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#3a2f20" flood-opacity="0.18"/>` +
+      `</filter></defs>`,
+    ...layer(stepWedges(state), true),
     `<g stroke="none">`,
-    ...stepsRing(state),
+    ...layer(stepsRing(state)),
     `</g>`,
-    ...solfegeWedges(state),
+    ...layer(solfegeWedges(state), true),
     `<g stroke="none">`,
-    ...modesRing(state),
-    ...solfegeRing(state),
+    ...layer([...modesRing(state), ...solfegeRing(state)]),
     `</g>`,
-    ...keyWedges(),
+    ...layer(keyWedges(), true),
     `<g stroke="none">`,
-    ...keysRing(state),
-    `</g>`,
-    `<circle cx="${size / 2}" cy="${size / 2}" r="${0.1 * scale}" fill="none"/>`,
+    ...layer(keysRing(state)),
+    ...hub(state),
     `</g>`,
     `</svg>`,
   ].join("\n");
@@ -274,10 +300,10 @@ const cofs = (state: State): string => {
 const modeOfTonic = (tonic: number): number => mod(4 * (tonic + 2) - 1, 7) + 1;
 const tonicOfMode = (mode: number): number => mod(2 * mode - 1, 7) - 1;
 
-const describe = ({ solfegeDo, tonic }: State): string => {
+const describe = ({ solfegeDo, tonic }: State): [string, string] => {
   const d = Math.round(solfegeDo);
   const t = Math.round(tonic);
-  return `${keyText[d + 7 + t]} ${modesText[t + 1]}`;
+  return [keyText[d + 7 + t], modesText[t + 1]];
 };
 
 // -------------------------------------------------------------------------
@@ -287,10 +313,9 @@ const describe = ({ solfegeDo, tonic }: State): string => {
 const initialize = (): void => {
   let state: State = { solfegeDo: 0, tonic: 0, dragging: false };
   const target = document.getElementById("cofs")!;
-  const status = document.getElementById("state")!;
   const draw = () => {
     target.innerHTML = cofs(state);
-    status.textContent = describe(state);
+    document.title = `${describe(state).join(" ")} · Circle of Fifths`;
   };
 
   // Let the rings glide into place.
